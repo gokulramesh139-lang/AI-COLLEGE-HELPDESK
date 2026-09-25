@@ -3,7 +3,7 @@ import re
 
 import chromadb
 from pypdf import PdfReader
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 
 
 # ============================================================
@@ -45,12 +45,20 @@ def model():
 
     if _model is None:
         print("Loading AI embedding model...")
-        _model = SentenceTransformer(
-            "all-MiniLM-L6-v2"
+        _model = TextEmbedding(
+            model_name="BAAI/bge-small-en-v1.5"
         )
         print("AI embedding model loaded.")
 
     return _model
+
+
+def embed_text(text):
+    """
+    Helper to get a single embedding vector as a plain list,
+    using fastembed's embed() generator interface.
+    """
+    return list(model().embed([text]))[0].tolist()
 
 
 # ============================================================
@@ -175,9 +183,7 @@ def load_college_knowledge():
             f"{title}: {content}"
         )
 
-        embedding = model().encode(
-            searchable_text
-        ).tolist()
+        embedding = embed_text(searchable_text)
 
         collection.upsert(
 
@@ -294,9 +300,7 @@ def ingest_pdf(path):
                 f"{index}"
             )
 
-            embedding = model().encode(
-                chunk
-            ).tolist()
+            embedding = embed_text(chunk)
 
             collection.upsert(
 
@@ -447,19 +451,10 @@ def answer_question(question):
         "postgraduate"
     ]
 
-    # Compute the embedding once, using OUR model
-    # (all-MiniLM-L6-v2), so every query lands in the
-    # SAME vector space as the documents that were
-    # indexed with model().encode(...). Previously the
-    # course_words branch used query_texts=, which asks
-    # Chroma to embed the question with its own default
-    # embedding function instead -- a different, mismatched
-    # vector space that produced meaningless distances and
-    # let the old college_knowledge.txt UG COURSES chunk
-    # win over the correct PDF content.
-    query_embedding = model().encode(
-        question
-    ).tolist()
+    # Compute the embedding once, using OUR model,
+    # so every query lands in the SAME vector space
+    # as the documents that were indexed.
+    query_embedding = embed_text(question)
 
     if any(
         word in q
@@ -642,11 +637,13 @@ def build_response(
             "• Chemistry Lab\n"
             "• Computer Lab\n"
             "• Internet / Wi-Fi\n"
+            "• Campus\n"
             "• Transport\n"
             "• Hostel\n"
             "• Auditorium\n"
             "• CCTV\n"
             "• Canteen\n"
+            "• Water Plant\n"
             "• Library\n"
             "• Fitness facilities\n"
             "• Medical facilities"

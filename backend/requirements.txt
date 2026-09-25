@@ -1,7 +1,7 @@
 fastapi
 uvicorn[standard]
 chromadb
-sentence-transformers
+fastembed
 pypdf
 python-multipart
 pydantic

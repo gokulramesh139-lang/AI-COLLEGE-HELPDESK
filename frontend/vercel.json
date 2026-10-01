@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://ai-college-helpdesk-4ha1.onrender.com/api/:path*"
+    }
+  ]
+}

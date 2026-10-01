@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './style.css'
 
-const API = 'http://127.0.0.1:8000'
+const API =  "https://ai-college-helpdesk-4ha1.onrender.com" 
 
 function App() {
   const [messages, setMessages] = useState([
